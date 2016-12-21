@@ -1,5 +1,3 @@
 log/*
 img/*
 !.gitkeep
-picture.sh
-send.sh
