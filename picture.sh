@@ -1,6 +1,11 @@
 #! /bin/sh
 
-HOSTNAME="raspberry1"
+#変数セット
+HOSTNAME="raspberrypi1"
+SAVEDIR=`pwd`/img/DAY     #ローカル写真保存場所
+FILESERVER=172.16.0.12    #ファイルサーバーアドレス
+SCPUSER=kennpin1          #ファイルサーバーへのログインID
+DIR=/mnt/usb2/samba/img   #ファイルサーバー上のPath
 
 cd `dirname $0`
 
@@ -57,3 +62,17 @@ do
   /usr/bin/fswebcam -d /dev/${vdo} -c ${INIFILE} --title ${HOSTNAME}_${vdo} --save ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
 done
 
+#ファイル送信
+for vdo in `ls /dev | grep video[0-3]`
+do
+  #送信ファイル
+  SENDFILE=${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
+
+  #ファイルサーバー保存場所確定
+  SCPDIR=${SCPUSER}@${FILESERVER}:${DIR}/${TOSI}/${TUKI}/${HI}/${HOSTNAME}/${vdo}
+
+  #ファイル送信
+  if [ -e ${SENDFILE} ]; then
+    scp -p ${SENDFILE} ${SCPDIR} >/dev/null
+  fi
+done
