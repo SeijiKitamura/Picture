@@ -1,0 +1,3 @@
+# m h  dom mon dow   command
+*/15 9-22 * * *  /bin/bash -c "/home/pi/picture/picture.sh"
+0 23 * * *       /bin/bash -c "/home/pi/picture/send.sh && /home/pi/picture/lotation.sh"
