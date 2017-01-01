@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd `dirname $0;pwd`
+cd `dirname $0`
 
 if [ -e log/fswebcam.log.7 ]; then
   rm log/fswebcam.log.7

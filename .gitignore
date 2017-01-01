@@ -1,5 +1,6 @@
 /log/*
 /public/img/*
 /ini/scpserver*.ini
+/conf/picture.conf
 !/ini/video_default.ini
 !.gitkeep
