@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 #何日前からのデータをサーバーに送信するかセット
 BACKDAY=1
@@ -9,7 +9,7 @@ HOSTNAME=`hostname`
 cd `dirname $0`
 
 #ローカルの写真をセーブする場所をセット
-SAVEDIR=`pwd`/img
+SAVEDIR=`pwd`/public/img
 
 #iniファイルのディレクトリをセット
 INIDIR=`pwd`/ini
@@ -30,11 +30,10 @@ if ls ${INIDIR}/scpserver*.ini > /dev/null 2>&1
 then
   echo "SCP送信先設定ファイル(${INIDIR}/scpserver*.iniの存在を確認しました"
 else
-  echo "error SCP送信先設定ファイルが存在しません。"
-  exit 1
+  echo "SCP送信先設定ファイルが存在しません。"
 fi
 
-#処理開始
+#ファイル送信開始
 for SCPINI in `ls ${INIDIR}/scpserver*.ini`
 do
   #設定ファイル読み込み

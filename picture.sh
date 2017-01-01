@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 #撮影間隔をセット(秒)
 #(0にするとたまにカメラが掴めなくてエラーになる)
@@ -13,11 +13,12 @@ cd `dirname $0`
 INIDIR=`pwd`/ini
 
 #ローカル写真保存場所
-SAVEDIR=`pwd`/img
+SAVEDIR=`pwd`/public/img
 
 #保存場所を作成
 if [ ! -d "$SAVEDIR" ]; then
-  mkdir $SAVEDIR
+  mkdir -p $SAVEDIR
+  touch ${SAVEDIR}/.gitkeep
 fi
 
 if [ ! -d "$INIDIR" ]; then
@@ -35,8 +36,7 @@ if ls ${INIDIR}/scpserver*.ini > /dev/null 2>&1
 then
   echo "SCP送信先設定ファイル(${INIDIR}/scpserver*.iniの存在を確認しました"
 else
-  echo "error SCP送信先設定ファイルが存在しません。"
-  exit 1
+  echo "SCP送信先設定ファイルが存在しません。"
 fi
 
 #ファイル名に使用する日付をゲット
