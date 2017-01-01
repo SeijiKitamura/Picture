@@ -1,0 +1,4 @@
+FILESERVER=               #ファイルサーバーアドレス
+SCPUSER=                  #ファイルサーバーへのログインID
+DIR=                      #ファイルサーバー上のPath
+
