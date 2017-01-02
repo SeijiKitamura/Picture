@@ -1,4 +1,5 @@
 ## はじめに
+fswebcamのラッパーです。
 PCに接続されているカメラ台数分だけ写真を撮影します。
 
 ## 必要なパッケージ
@@ -6,12 +7,14 @@ fswebcamを使用しています。ターミナルで以下のコマンドを実
 ```bash
    sudo apt-get install -y fswebcam
 ```
+
 ## ダウンロード
 homeディレクトリに保存することを前提にしています。ターミナルで以下のコマンドを実行してください。
 ```bash
    cd
-   git clone git@github.com:SeijiKitamura
+   git clone https://github.com/SeijiKitamura/picture.git
 ```
+
 ## 使い方
 PCにWebカメラを指して以下のコマンドを実行してください。
 ```bash
@@ -24,6 +27,7 @@ picture/public/img内に写真が保存されてます。
    cd
    ls picture/public/img
 ```
+
 ## 画像ファイル名規則
 以下のルールでファイル名が決まります。
 ```
@@ -35,6 +39,7 @@ ex)1台のカメラで2017年1月3日午前9時7分に撮影した写真
 ```
    DAY201701030907_video0.jpg
 ```
+
 ## 定点観測
 あとはcronに設定すれば定点観測になります。以下はユーザー名「pi」のcron設定例です。
 午前9時から午後22時まで15分間隔で撮影を行います。
@@ -43,6 +48,7 @@ ex)1台のカメラで2017年1月3日午前9時7分に撮影した写真
    crontab -e
    */15 9-22 * * * /bin/bash /home/pi/picture/picture.sh > /dev/null 2>&1
 ```
+
 ## 注意点
 + PCに接続されているすべてのカメラを使って撮影を行います。
 ```
@@ -109,7 +115,7 @@ Webカメラで撮影した画像を１つのサーバーに集約する場合�
 
    毎日午前0時
 
-   再起動を望まないもしくは時間を変更したい場合には「sudo crontab -e」と入力
+   「再起動を望まない」もしくは「時間を変更したい」場合には「sudo crontab -e」と入力
    して修正してください。
    (crontab -eの詳しい説明はインターネットで検索してください)
 ```
@@ -144,7 +150,7 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
 ### ファイル詳細
 #### picture.sh
 /dev/video[\*]の台数分だけ静止画を撮影します。
-撮影後はpublic/imgディレクトリに「DAY年月日_video[\*].jpg」という名前で
+撮影後はpublic/imgディレクトリに「DAY年月日時分_video[\*].jpg」という名前で
 保存されその後、ファイルサーバーへの送信を行います。
 
 ##### SLEEPTIME
@@ -172,7 +178,7 @@ ex)SLEEPTIME=3でカメラ4台接続されている場合
 
 #### send.sh
 撮影した写真を再度ファイルサーバーに送信します。LAN接続が切れていた等の障害発生に備えて、「何日前」から今日までの
-写真を再送信することが可能です。
+写真を再送信します。
 
 ##### BACKDAY
 何日前からの写真を再送信の対象とするか0以上の数字を登録します。
@@ -188,15 +194,35 @@ BACKDAY=3
 
 ##### ini/scpserver[0-9]*.ini
 ファイル送信先の情報を登録するファイルです。送信先を複数台登録することも可能で、その場合はini/scpserver[任意の番号].iniファイルを
-設置してください。「picture.sh」と同じファイルを使用しています。
+設置してください。「picture.sh」と同じファイルを使用しています。(ファイル送信にはscpを使用しています)
+なお、ファイルサーバーには以下のフォルダが用意されていることが前提となっています。
+
+/指定したディレクトリ/年/月/日/ホスト名/デバイス名
+
+ex)
+以下の条件で撮影した場合、
+撮影日                   2016年12月15日
+ホスト名                 raspberry
+デバイス名               video0
+ini/scpserver.ini内のDIR /home/user/picture
+
+ファイルサーバー上で必要なディレクトリは
+
 ```
+/home/user/picture/2016/12/15/raspberry/video0
+```
+
+です。
+
 注意点
+```
 ファイル送信に成功しても失敗してもBACKDAYで指定された写真は削除されます。
 ```
 
 ##### conf/cron.txt
 インストール時に自動でcronに追加されます。
 デフォルトでは以下のスケジュールで実行されます。
+
 ```
 picture.sh  毎日午前9時から午後22時までの15分間隔
 send.sh     毎日午後23時
@@ -205,10 +231,50 @@ send.sh     毎日午後23時
 このスケジュールを変更する場合は、「crontab -e」と入力して変更して
 ください。(crontab -eの詳しい説明はインターネットで検索してください)
 
+このcron.txtを登録すれば「picture.sh」、「send.sh」のログがsyslogに残るようになります。
+
 ##### conf/reboot.txt
+インストール時に自動でcronに追加されます。
 このPCの再起動スケジュールです。デフォルトでは以下のスケジュールで再起動されます。
+
 ```
 毎日午前0時
+```
+
+### ファイルサーバー用
+#### make_dir.sh
+ファイルサーバー用のディレクトリ作成プログラムです。
+send.shで送られてくる画像を保存するためのディレクトリを作成します。
+実行ファイルはmake_dir.shで、このプログラムはcamera_list.txtを読み込み
+そこに記載されているカメラPCのホスト名ごとに当日の日付のディレクトリを作成します。
+初期設定では1台のカメラPCに11台のカメラが接続されていても大丈夫なように
+なっています。
+
+```
+ファイル構成
+  fileserver/make_dir.sh
+  fileserver/camera_list.txt.default
+
+設置
+  ファイルサーバーの任意のディレクトリに上記ファイルを保存してください。
+
+cron
+  make_dir.shをcronに登録します。
+
+ex)
+  ファイルサーバー保存場所が/home/user/picureだった場合、以下のようになります。
+  (すでに、/home/user/pictureに上記2ファイルがある前提です）
+
+  cp camera_list.txt.default camera_list.txt
+  vi camera_list.txt (カメラPCのホスト名を入力して保存）
+  crontab -e (以下の内容を登録して保存します)
+  0 0 * * * /bin/bash /home/user/picture/make_dir.sh | logger -i -t "make_dir.sh"
+
+注意点)
+  カメラPCはファイルサーバーにscpでファイル送信するので、カメラPCのid_rsa.pubが
+  ファイルサーバーのauthorized_keysに登録済みとなっていることが前提になります。
+  scpやid_rsa.pubの詳細についてはインターネットで検索してください。
+
 ```
 
 ## ログについて
@@ -217,8 +283,7 @@ picture.sh、send.shはほとんどのメッセージを標準出力にて吐き
 
 また、picture.sh内で使用しているfswebcamのログは出力しない設定にしていま
 す。出力したい場合はpicture.sh内fswebcamの「-q」オプションを削除し
-てください。(fswebcamのその他の詳しい設定はインターネットで検索して
-ください。)
+てください。(fswebcamの詳しい設定はインターネットで検索してください。)
 
 ログをファイルに出力したい場合には、picture.sh > logfile.txt
 でlogfile.txtに出力されます。

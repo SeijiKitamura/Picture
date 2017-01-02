@@ -4,3 +4,4 @@
 /conf/picture.conf
 !/ini/video_default.ini
 !.gitkeep
+/fileserver/camera_list.txt
