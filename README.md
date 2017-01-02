@@ -153,16 +153,16 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
 撮影後はpublic/imgディレクトリに「DAY年月日時分_video[\*].jpg」という名前で
 保存されその後、ファイルサーバーへの送信を行います。
 
-##### SLEEPTIME
-```
-1つのカメラを撮影してから次のカメラに移るまでの時間（秒）。0にすると稀に「device busy」となり撮影に失敗します。
++ SLEEPTIME (picture.sh 変数)
+  ```
+  1つのカメラを撮影してから次のカメラに移るまでの時間（秒）。0にすると稀に「device busy」となり撮影に失敗します。
 
-ex)SLEEPTIME=3でカメラ4台接続されている場合
-  video0 撮影後、3秒停止
-  video1 撮影後、3秒停止
-  video2 撮影後、3秒停止
-  video3 撮影後、3秒停止
-```
+  ex)SLEEPTIME=3でカメラ4台接続されている場合
+    video0 撮影後、3秒停止
+    video1 撮影後、3秒停止
+    video2 撮影後、3秒停止
+    video3 撮影後、3秒停止
+  ```
 
 ##### ini/video_default.ini
 デフォルトのカメラ設定です。詳細はインターネットで「fswebcam option」と検索してください。
@@ -180,19 +180,20 @@ ex)SLEEPTIME=3でカメラ4台接続されている場合
 撮影した写真を再度ファイルサーバーに送信します。LAN接続が切れていた等の障害発生に備えて、「何日前」から今日までの
 写真を再送信します。
 
-##### BACKDAY
-何日前からの写真を再送信の対象とするか0以上の数字を登録します。
-再送信後、ここで指定した日付の写真が削除されます。
-```
-ex)
-#当日の写真を再送信後、当日の写真を削除
-BACKDAY=0
- 
-#3日前から今日までの写真を再送信後、3日前の写真を削除
-BACKDAY=3
-```
+##### 変数
++ BACKDAY (send.sh 変数)
+  何日前からの写真を再送信の対象とするか0以上の数字を登録します。
+  再送信後、ここで指定した日付の写真が削除されます。
+  ```
+  ex)
+  #当日の写真を再送信後、当日の写真を削除
+  BACKDAY=0
+   
+  #3日前から今日までの写真を再送信後、3日前の写真を削除
+  BACKDAY=3
+  ```
 
-##### ini/scpserver[0-9]*.ini
+#### ini/scpserver[0-9]*.ini
 ファイル送信先の情報を登録するファイルです。送信先を複数台登録することも可能で、その場合はini/scpserver[任意の番号].iniファイルを
 設置してください。「picture.sh」と同じファイルを使用しています。(ファイル送信にはscpを使用しています)
 なお、ファイルサーバーには以下のフォルダが用意されていることが前提となっています。
@@ -219,7 +220,7 @@ ini/scpserver.ini内のDIR /home/user/picture
 ファイル送信に成功しても失敗してもBACKDAYで指定された写真は削除されます。
 ```
 
-##### conf/cron.txt
+#### conf/cron.txt
 インストール時に自動でcronに追加されます。
 デフォルトでは以下のスケジュールで実行されます。
 
@@ -233,7 +234,7 @@ send.sh     毎日午後23時
 
 このcron.txtを登録すれば「picture.sh」、「send.sh」のログがsyslogに残るようになります。
 
-##### conf/reboot.txt
+#### conf/reboot.txt
 インストール時に自動でcronに追加されます。
 このPCの再起動スケジュールです。デフォルトでは以下のスケジュールで再起動されます。
 
@@ -242,40 +243,50 @@ send.sh     毎日午後23時
 ```
 
 ### ファイルサーバー用
-#### make_dir.sh
+#### fileserver/make_dir.sh
 ファイルサーバー用のディレクトリ作成プログラムです。
 send.shで送られてくる画像を保存するためのディレクトリを作成します。
-実行ファイルはmake_dir.shで、このプログラムはcamera_list.txtを読み込み
-そこに記載されているカメラPCのホスト名ごとに当日の日付のディレクトリを作成します。
+amera_list.txtを読み込みそこに記載されているカメラPCのホスト名ごとに
+当日の日付のディレクトリを作成します。
 初期設定では1台のカメラPCに11台のカメラが接続されていても大丈夫なように
 なっています。
 
+##### 変数
++ MAX_VIDEO   1台のPCに接続する最大カメラ台数(0から始まる)
++ DEV Web     カメラのデバイス名(/devに依存)
++ CAMERA_LIST カメラサーバーリスト
+
+#### fileserver/camera_list.txt.default
+このファイルをcamera_list.txtという名前でコピーして、そこにカメラPCの
+ホスト名を記入します。記入されたホスト名のディレクトリが作成されます。
+
+#### 設置方法
++ ファイルサーバーの任意のディレクトリに上記ファイルを保存
++ camera_list.txtを作成
++ make_dir.shをcronに登録
+
+#### 例
++ ファイルサーバー保存場所 /home/user/picture
++ ファイルセット (/home/user/picture に上記2ファイルをコピー済み)
++ カメラPCが2台。ホスト名 (raspberry1 raspberry2)
++ 毎日午前0時にディレクトリ作成
+
+```bash
+# ファイルサーバー上にて
+cd /home/user/picture
+cp camera_list.txt.default camera_list.txt
+echo "raspberry1" >> camera_list.txt
+echo "raspberry2" >> camera_list.txt
+./make_dir.sh
+crontab -e
+0 0 * * * /bin/bash /home/user/picture/make_dir.sh | logger -i -t "make_dir.sh"
 ```
-ファイル構成
-  fileserver/make_dir.sh
-  fileserver/camera_list.txt.default
+上記コマンドでpictureディレクトリ内に今日の日付のディレクトリが作成されます。
 
-設置
-  ファイルサーバーの任意のディレクトリに上記ファイルを保存してください。
-
-cron
-  make_dir.shをcronに登録します。
-
-ex)
-  ファイルサーバー保存場所が/home/user/picureだった場合、以下のようになります。
-  (すでに、/home/user/pictureに上記2ファイルがある前提です）
-
-  cp camera_list.txt.default camera_list.txt
-  vi camera_list.txt (カメラPCのホスト名を入力して保存）
-  crontab -e (以下の内容を登録して保存します)
-  0 0 * * * /bin/bash /home/user/picture/make_dir.sh | logger -i -t "make_dir.sh"
-
-注意点)
-  カメラPCはファイルサーバーにscpでファイル送信するので、カメラPCのid_rsa.pubが
-  ファイルサーバーのauthorized_keysに登録済みとなっていることが前提になります。
-  scpやid_rsa.pubの詳細についてはインターネットで検索してください。
-
-```
+#### 注意点
+カメラPCはファイルサーバーにscpでファイル送信するので、カメラPCのid_rsa.pubが
+ファイルサーバーのauthorized_keysに登録済みとなっていることが前提になります。
+scpやid_rsa.pubの詳細についてはインターネットで検索してください。
 
 ## ログについて
 picture.sh、send.shはほとんどのメッセージを標準出力にて吐き出します。
