@@ -98,7 +98,12 @@ Webカメラで撮影した画像を１つのサーバーに集約する場合�
 #### apache設定
 ```
    conf/picture.confをコピーしてブラウザから写真を確認できるようにします。
-   ブラウザで「IPアドレス/img」と打ち込むと写真が確認できます。
+   ブラウザで「カメラPCのIPアドレス/img」と打ち込むと写真が確認できます。
+   DocumentRoot は
+
+   /home/ユーザー名/picture/public
+
+   です。
 ```
 
 #### cron(conf/cron.txt)
@@ -164,26 +169,25 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
     video3 撮影後、3秒停止
   ```
 
-##### ini/video_default.ini
+#### ini/video_default.ini
 デフォルトのカメラ設定です。詳細はインターネットで「fswebcam option」と検索してください。
 
-##### ini/video[0-9]*.ini
+#### ini/video[0-9]*.ini
 カメラごとに設定ファイルを作成することも可能です。  この場合、/dev/video と ini/video の番号が一致している必要があります。
 （なければvideo_default.iniが使用されます)
 
-##### ini/scpserver[0-9]*.ini
+#### ini/scpserver[0-9]*.ini
 
 ファイル送信先の情報を登録するファイルです。送信先を複数台登録することも可能で、その場合はini/scpserver[任意の番号].iniファイルを
 設置してください。ファイル送信を希望しない場合にはこのファイルを削除してください。
 
 #### send.sh
 撮影した写真を再度ファイルサーバーに送信します。LAN接続が切れていた等の障害発生に備えて、「何日前」から今日までの
-写真を再送信します。
+写真を再送信します。再送信後、ここで指定した日付の写真が削除されます。
 
 ##### 変数
 + BACKDAY (send.sh 変数)
   何日前からの写真を再送信の対象とするか0以上の数字を登録します。
-  再送信後、ここで指定した日付の写真が削除されます。
   ```
   ex)
   #当日の写真を再送信後、当日の写真を削除
@@ -194,18 +198,22 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
   ```
 
 #### ini/scpserver[0-9]*.ini
-ファイル送信先の情報を登録するファイルです。送信先を複数台登録することも可能で、その場合はini/scpserver[任意の番号].iniファイルを
-設置してください。「picture.sh」と同じファイルを使用しています。(ファイル送信にはscpを使用しています)
+ファイル送信先の情報を登録するファイルです。送信先を複数台登録することも可能で、
+その場合はini/scpserver[任意の番号].iniファイルを設置してください。
+「picture.sh」と同じファイルを使用しています。(ファイル送信にはscpを使用しています)
 なお、ファイルサーバーには以下のフォルダが用意されていることが前提となっています。
 
 /指定したディレクトリ/年/月/日/ホスト名/デバイス名
 
 ex)
 以下の条件で撮影した場合、
+
+```
 撮影日                   2016年12月15日
 ホスト名                 raspberry
 デバイス名               video0
 ini/scpserver.ini内のDIR /home/user/picture
+```
 
 ファイルサーバー上で必要なディレクトリは
 
@@ -228,11 +236,7 @@ ini/scpserver.ini内のDIR /home/user/picture
 picture.sh  毎日午前9時から午後22時までの15分間隔
 send.sh     毎日午後23時
 ```
-
-このスケジュールを変更する場合は、「crontab -e」と入力して変更して
-ください。(crontab -eの詳しい説明はインターネットで検索してください)
-
-このcron.txtを登録すれば「picture.sh」、「send.sh」のログがsyslogに残るようになります。
+このcron.txtで「picture.sh」、「send.sh」のログがsyslogに残るようになります。
 
 #### conf/reboot.txt
 インストール時に自動でcronに追加されます。
@@ -242,30 +246,34 @@ send.sh     毎日午後23時
 毎日午前0時
 ```
 
-### ファイルサーバー用
-#### fileserver/make_dir.sh
-ファイルサーバー用のディレクトリ作成プログラムです。
+## ファイルサーバー用
 send.shで送られてくる画像を保存するためのディレクトリを作成します。
-amera_list.txtを読み込みそこに記載されているカメラPCのホスト名ごとに
+作成されるディレクトリは以下のとおりです。
+
+
+### fileserver/make_dir.sh
+ファイルサーバー用のディレクトリ作成プログラムです。
+camera_list.txtを読み込みそこに記載されているカメラPCのホスト名ごとに
 当日の日付のディレクトリを作成します。
-初期設定では1台のカメラPCに11台のカメラが接続されていても大丈夫なように
-なっています。
+```
+年/月/日/ホスト名/デバイス名
+```
 
-##### 変数
-+ MAX_VIDEO   1台のPCに接続する最大カメラ台数(0から始まる)
-+ DEV Web     カメラのデバイス名(/devに依存)
-+ CAMERA_LIST カメラサーバーリスト
+#### 変数
++ MAX_VIDEO   (1台のPCに接続する最大カメラ台数。0から始まる)
++ DEV Web     (カメラのデバイス名。/devに依存)
++ CAMERA_LIST (カメラサーバーリスト)
 
-#### fileserver/camera_list.txt.default
+### fileserver/camera_list.txt.default
 このファイルをcamera_list.txtという名前でコピーして、そこにカメラPCの
 ホスト名を記入します。記入されたホスト名のディレクトリが作成されます。
 
-#### 設置方法
+### 設置方法
 + ファイルサーバーの任意のディレクトリに上記ファイルを保存
 + camera_list.txtを作成
 + make_dir.shをcronに登録
 
-#### 例
+### 例
 + ファイルサーバー保存場所 /home/user/picture
 + ファイルセット (/home/user/picture に上記2ファイルをコピー済み)
 + カメラPCが2台。ホスト名 (raspberry1 raspberry2)
@@ -283,7 +291,7 @@ crontab -e
 ```
 上記コマンドでpictureディレクトリ内に今日の日付のディレクトリが作成されます。
 
-#### 注意点
+### 注意点
 カメラPCはファイルサーバーにscpでファイル送信するので、カメラPCのid_rsa.pubが
 ファイルサーバーのauthorized_keysに登録済みとなっていることが前提になります。
 scpやid_rsa.pubの詳細についてはインターネットで検索してください。
