@@ -1,5 +1,6 @@
 /log/*
 /public/img/*
+/public/image_list.txt
 /ini/scpserver*.ini
 /conf/picture.conf
 !/ini/video_default.ini

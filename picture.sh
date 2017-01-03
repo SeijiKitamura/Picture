@@ -1,14 +1,12 @@
 #! /bin/bash
 
+cd `dirname $0`
+
 ###############################################
 #変数
 
 #撮影間隔をセット(秒)
 SLEEPTIME=3
-
-###############################################
-
-cd `dirname $0`
 
 #PC名をセット
 HOSTNAME=`hostname`
@@ -18,6 +16,8 @@ INIDIR=`pwd`/ini
 
 #ローカル写真保存場所
 SAVEDIR=`pwd`/public/img
+
+###############################################
 
 #保存場所を作成
 if [ ! -d "$SAVEDIR" ]; then
@@ -100,3 +100,9 @@ do
     fi
   done
 done
+
+#写真リスト更新
+find ${SAVEDIR} -maxdepth 1 -type f -name "DAY*.jpg" |
+awk -F"[\/|_|\.]" '{print substr($3,4,4),substr($3,8,2),substr($3,10,2),$4}' |
+sort |
+uniq > public/image_list.txt

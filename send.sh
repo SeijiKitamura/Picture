@@ -4,7 +4,7 @@
 #変数
 
 #何日前からのデータをサーバーに送信するかセット
-BACKDAY=1
+BACKDAY=3
 
 ###############################################
 
@@ -69,3 +69,9 @@ HIDUKE=`date +"%Y%m%d" --date "${BACKDAY} days ago"`
 echo "日付 ${HIDUKE}の写真を削除します"
 find ${SAVEDIR} -maxdepth 1 -type f -name "DAY${HIDUKE}*.jpg" -delete
 echo "日付 ${HIDUKE}の写真を削除しました"
+
+#写真リスト更新
+find ${SAVEDIR} -maxdepth 1 -type f -name "DAY*.jpg" |
+awk -F"[\/|_|\.]" '{print substr($3,4,4),substr($3,8,2),substr($3,10,2),$4}' |
+sort |
+uniq > public/image_list.txt

@@ -1,0 +1,262 @@
+<!DOCTYPE html5>
+<html lang="ja">
+  <head>
+    <title>定点観測</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-2.2.4.js"
+            integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+            crossorigin="anonymous"></script>
+    <script src ="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>定点観測</h1>
+      <div class="row">
+        <div class="col-md-3">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="text-center">年</th>
+                <th class="text-center">月</th>
+                <th class="text-center">日</th>
+                <th class="text-center">カメラ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <select id="year">
+                  </select>
+                </td>
+                <td>
+                   <select id="month"></select>
+                </td>
+                <td>
+                   <select id="day"></select>
+                </td>
+                <td>
+                   <select id="video"></select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <table class="table table-bordered image-table">
+            <thead>
+              <tr>
+                <th class="text-center">時間</th>
+                <th class="text-center">00分</th>
+                <th class="text-center">15分</th>
+                <th class="text-center">30分</th>
+                <th class="text-center">45分</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+var starthour = 9;
+var endhour   =22;
+var minute    =["00","15","30","45"];
+
+var year,month,day,video
+
+$(function(){
+  image.get();
+  $("select#year").on("change",function(){
+    year=$(this).val();
+    setmonth(year);
+    $("select#day").empty();
+    $("select#video").empty();
+    $("table.image-table tbody").empty();
+  }); //$("select#year")
+
+  $("select#month").on("change",function(){
+    month=$(this).val();
+    setday(year,month);
+    $("select#video").empty();
+    $("table.image-table tbody").empty();
+  }); //$("select#month")
+
+  $("select#day").on("change",function(){
+    day=$(this).val();
+    setvideo(year,month,day);
+    $("table.image-table tbody").empty();
+  }); //$("select$day")
+
+  $("select#video").on("change",function(){
+    video = $(this).val();
+    showimage(year,month,day,video);
+  }); //$("select#video")
+
+});
+
+var setyear= function(){
+               if(image.year.length == 0) return false;
+               $("select#year").empty()
+                               .append($("<option>"));
+
+               $.each(image.year,function(i,e){
+                 var opt = $("<option>").val(e)
+                                        .text(e)
+                                        .appendTo($("select#year"));
+               }); //$.each
+             } //setyear
+
+var setmonth = function(year){
+                 if(image.year.length == 0) return false;
+                 if(year.length == 0) return false;
+                 image.setmonth(year);
+                 $("select#month").empty()
+                                  .append($("<option>"));
+                 $.each(image.month,function(i,e){
+                   var opt = $("<option>").val(e)
+                                          .text(e)
+                                          .appendTo($("select#month"));
+                 }); //$.each
+               }; //setmonth
+
+var setday = function(year,month){
+               if(image.year.length == 0) return false;
+               if(year.length == 0)       return false;
+               if(month.length == 0)      return false;
+               image.setday(year,month);
+               $("select#day").empty()
+                              .append($("<option>"));
+               $.each(image.day,function(i,e){
+                 var opt = $("<option>").val(e)
+                                        .text(e)
+                                        .appendTo($("select#day"));
+               }); //$.each
+             }; // setday
+var setvideo = function(year,month,day){
+                 if(image.year.length == 0) return false;
+                 if(year.length == 0 )      return false;
+                 if(month.length == 0)      return false;
+                 if(day.length == 0)        return false;
+                 image.setvideo(year,month,day);
+                 $("select#video").empty()
+                                  .append($("<option>"));
+                 $.each(image.video,function(i,e){
+                   var opt = $("<option>").val(e)
+                                          .text(e)
+                                          .appendTo($("select#video"));
+                 }); //$.each
+               }; //setvideo
+
+var showimage = function(year,month,day,video){
+                  if(image.year.length == 0) return false;
+                  if(year.length == 0 )      return false;
+                  if(month.length == 0)      return false;
+                  if(day.length == 0)        return false;
+                  if(video.length == 0)      return false;
+                  var baseurl = "/img/DAY" + year + month + day ;
+                  var tailurl = "_" + video +".jpg";
+                  $("table.image-table tbody").empty();
+                  for (var i = starthour; i <= endhour; i++){
+                    var tr=$("<tr>");
+                    var hour="" + i;
+                    tr.append($("<td>").text(hour));
+                    if(i < 10) hour = "0" + hour;
+                    $.each(minute,function(i,e){
+                      var time = hour + e;
+                      var url =baseurl + time + tailurl;
+                      console.log(url);
+                      var a=$("<a>").attr({"href": url});
+                      var img=$("<img>").addClass("lazy")
+                                        .attr({src: url,
+                                               "data-original": url,
+                                               width: 120,
+                                               height: 90})
+                      $("<td>").append(a.append(img))
+                               .appendTo(tr);
+
+                    }); //$.each
+                    $("table.image-table tbody").append(tr);
+                  }// for
+
+                }; //showimage
+
+//image_list.txtを配列へ格納するクラス
+var image = {
+  list:      "", //list
+  ary:       [], //ary
+  year:      [],
+  month:     [],
+  day:       [],
+  video:     [],
+  get:       function(){
+               // 注)同期通信
+               $.ajax({url: "/image_list.txt",async: "false"})
+                .done(function(data){
+                                     //console.log(data);
+                                     image.list = data.split(/\r\n|\r|\n/);
+                                     image.setary();
+                                     image.setyear();
+                                     setyear();
+                                    }
+                      ); //done
+             },//get
+  setary:    function(){
+               if(this.list.legth == 0) return false;
+               this.ary = [];
+               $.each(this.list,function(i,e){
+                 var sp = e.split(/ /);
+                 var obj = { year: sp[0],month: sp[1],day: sp[2],video: sp[3] };
+                 if(e.length >0) image.ary.push(obj);
+               });// $.each
+             }, //setary
+  setyear:   function(){
+               if(this.ary.length == 0) return false;
+               this.year =[];
+               $.each(this.ary,function(i,e){
+                 if ($.inArray(e.year,image.year) == -1){
+                   image.year.push(e.year);
+                 }
+               }); // $.each
+               this.year.sort();
+             },//setyear
+  setmonth:  function(year){
+               this.month = [];
+               $.each(this.ary,function(i,e){
+                 if (e.year == year){
+                   if ($.inArray(e.month,image.month) == -1){
+                     image.month.push(e.month);
+                   }
+                 }
+               }); // $.each
+               this.month.sort();
+             },//setmonth
+  setday:    function(year,month){
+               this.day=[];
+               $.each(this.ary,function(i,e){
+                 if (e.year == year && e.month == month){
+                   if ($.inArray(e.day,image.day) == -1){
+                     image.day.push(e.day);
+                   }
+                 }
+               });//$.each
+               this.day.sort()
+             },// setday
+  setvideo:  function(year,month,day){
+               this.video = [];
+               $.each(this.ary,function(i,e){
+                 if(e.year == year && e.month == month && e.day == day){
+                   if($.inArray(e.video,image.video) == -1){
+                     image.video.push(e.video);
+                   }
+                 }
+               }); // $.each
+               this.video.sort();
+             } //setvideo
+}
+  </script>
+</html>
