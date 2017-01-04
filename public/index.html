@@ -7,6 +7,7 @@
             integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
             crossorigin="anonymous"></script>
     <script src ="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src = "/jquery.lazyload.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -87,6 +88,7 @@ $(function(){
   }); //$("select$day")
 
   $("select#video").on("change",function(){
+    $("table.image-table tbody").empty();
     video = $(this).val();
     showimage(year,month,day,video);
   }); //$("select#video")
@@ -177,9 +179,9 @@ var showimage = function(year,month,day,video){
                       var time = hour + e;
                       var url =baseurl + time + tailurl;
                       console.log(url);
-                      var a=$("<a>").attr({"href": url});
+                      var a=$("<a>").attr({"href": url,"target": "_blank"});
                       var img=$("<img>").addClass("lazy")
-                                        .attr({src: url,
+                                        .attr({//src: url,
                                                "data-original": url,
                                                width: 120,
                                                height: 90})
@@ -190,6 +192,7 @@ var showimage = function(year,month,day,video){
                     $("table.image-table tbody").append(tr);
                   }// for
 
+                  $("img.lazy").lazyload();
                 }; //showimage
 
 //image_list.txtを配列へ格納するクラス
@@ -201,7 +204,7 @@ var image = {
   day:       [],
   video:     [],
   get:       function(){
-               // 注)同期通信
+               // 注) 同期通信
                $.ajax({url: "/image_list.txt",async: "false"})
                 .done(function(data){
                                      //console.log(data);
@@ -265,5 +268,10 @@ var image = {
                this.video.sort();
              } //setvideo
 }
+
+//------------------------------------//
+// 俺の書くjQueryってなんでこんなに汚
+// くなっちゃうんだろ・・・。
+//------------------------------------//
   </script>
 </html>
