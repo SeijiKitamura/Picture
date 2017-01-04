@@ -67,11 +67,36 @@ do
   /usr/bin/fswebcam -q -d /dev/${vdo} -c ${INIFILE} --title ${HOSTNAME}_${vdo} --save ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
 
   if [ $? -ne 0 ]; then
-    echo "error ${vdo}で撮影できませんでした...."
+    echo "error ${vdo}の撮影ができませんでした...."
   fi
 
   echo "sleeping ${SLEEPTIME}sec"
   sleep ${SLEEPTIME}
+done
+
+#撮影リカバリー(1 try)
+for vdo in `ls /dev | grep -E 'video[0-9]+$'`
+do
+  if [ ! -e ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg ]; then
+    #iniファイルの存在チェック
+    #なければ./ini/video_default.iniを使用
+    if [ -e ${INIDIR}/${vdo}.ini ]; then
+     INIFILE=${INIDIR}/${vdo}.ini
+    else
+     INIFILE=${INIDIR}/video_default.ini
+    fi
+
+    echo "recovery ${vdo}の撮影開始"
+
+    /usr/bin/fswebcam -q -d /dev/${vdo} -c ${INIFILE} --title ${HOSTNAME}_${vdo} --save ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
+
+    if [ $? -ne 0 ]; then
+      echo "error ${vdo}の撮影ができませんでした...."
+    fi
+
+    echo "sleeping ${SLEEPTIME}sec"
+    sleep ${SLEEPTIME}
+  fi
 done
 
 #ファイル送信
@@ -103,6 +128,9 @@ done
 
 #写真リスト更新
 find ${SAVEDIR} -maxdepth 1 -type f -name "DAY*.jpg" |
-awk -F"[\/|_|\.]" '{print substr($3,4,4),substr($3,8,2),substr($3,10,2),$4}' |
+xargs -I{} basename {} |
+awk -F"[\/|\.|_]" '{print substr($1,4,4),substr($1,8,2),substr($1,10,2),$2}' |
 sort |
 uniq > public/image_list.txt
+
+exit 0
