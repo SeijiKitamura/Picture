@@ -47,13 +47,6 @@
         <div class="col-md-8">
           <table class="table table-bordered image-table">
             <thead>
-              <tr>
-                <th class="text-center">時間</th>
-                <th class="text-center">00分</th>
-                <th class="text-center">15分</th>
-                <th class="text-center">30分</th>
-                <th class="text-center">45分</th>
-              </tr>
             </thead>
             <tbody>
             </tbody>
@@ -71,6 +64,7 @@ var year,month,day,video
 
 $(function(){
   image.get();
+  setthead();
   $("select#year").on("change",function(){
     year=$(this).val();
     setmonth(year);
@@ -98,6 +92,19 @@ $(function(){
   }); //$("select#video")
 
 });
+
+var setthead = function(){
+                 var tr=$("<tr>");
+                 $("<th>").text("時間")
+                          .addClass("text-center")
+                          .appendTo(tr);
+                 $.each(minute,function(i,e){
+                   $("<th>").text(e + "分")
+                            .addClass("text-center")
+                            .appendTo(tr);
+                 }); //$.each
+                 tr.appendTo("table.image-table thead");
+               } //setthead
 
 var setyear= function(){
                if(image.year.length == 0) return false;
