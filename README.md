@@ -5,7 +5,7 @@ PCに接続されているカメラ台数分だけ写真を撮影します。
 ## 必要なパッケージ
 fswebcamを使用しています。ターミナルで以下のコマンドを実行してください。
 ```bash
-   sudo apt-get install -y fswebcam
+   sudo apt-get install -y fswebcam apache2 fonts-vlgothic fonts-ipafont fonts-ipaexfont
 ```
 
 ## ダウンロード
@@ -13,6 +13,17 @@ homeディレクトリに保存することを前提にしています。ター�
 ```bash
    cd
    git clone https://github.com/SeijiKitamura/picture.git
+```
+
+##設定
+ini/device.iniに接続するカメラ台数分だけvideo0-3を入力してください。
+```bash
+   cd
+   cd ./picture/ini
+   vi device.ini
+
+   #カメラを4台さした場合
+   video=("video0" "video1" "video2" "video3")
 ```
 
 ## 使い方
@@ -150,7 +161,7 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
 
 ### ファイル詳細
 #### picture.sh
-/dev/video[\*]の台数分だけ静止画を撮影します。
+device.iniに登録したカメラ台数分だけ静止画を撮影します。
 撮影後はpublic/imgディレクトリに「DAY年月日時分_video[\*].jpg」という名前で
 保存されその後、ファイルサーバーへの送信を行います。
 最後にpublic/に写真リストを出力します。(index.html用)
@@ -165,6 +176,9 @@ scpserver.ini.defaultをscpserver.iniにコピーし,以下の内容を登録し
     video2 撮影後、3秒停止
     video3 撮影後、3秒停止
   ```
+
+#### ini/device.ini
+接続するカメラのデバイス名を入力します。
 
 #### ini/video_default.ini
 デフォルトのカメラ設定です。詳細はインターネットで「fswebcam option」と検索してください。
