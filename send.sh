@@ -4,7 +4,7 @@
 #変数
 
 #接続カメラ
-video=("video0" "video1" "video2")
+#video=("video0" "video1" "video2")
 
 #何日前からのデータをサーバーに送信するかセット
 BACKDAY=3
@@ -26,11 +26,25 @@ INIDIR=`pwd`/ini
 if [ ! -d "$SAVEDIR" ]; then
   echo "error ${SAVEDIR}がありません..."
   exit 1
+else
+   echo "保存場所(${SAVEDIR})を確認しました"
 fi
 
+#設定ディレクトリ存在チェック
 if [ ! -d "$INIDIR" ]; then
   echo "error iniディレクトリがありません。処理を中止します"
   exit 1
+else
+  echo "iniディレクトリ存在確認しました"
+fi
+
+#カメラ台数設定ファイルチェック
+if [ ! -e "$INIDIR"/device.ini ]; then
+  echo "error カメラ台数ファイルがありません。処理を中止します。"
+  exit 1
+else
+  . ${INIDIR}/device.ini 
+  echo "device.ini確認しました(${video[@]})"
 fi
 
 #SCP用iniファイル存在チェック

@@ -7,7 +7,7 @@ cd `dirname $0`
 #変数
 
 #接続カメラ
-video=("video0" "video1" "video2")
+#video=("video0" "video1" "video2")
 
 #撮影間隔をセット(秒)
 SLEEPTIME=3
@@ -29,14 +29,29 @@ if [ ! -d "$SAVEDIR" ]; then
   touch ${SAVEDIR}/.gitkeep
 fi
 
+#設定ディレクトリ存在チェック
 if [ ! -d "$INIDIR" ]; then
   echo "error iniディレクトリがありません。処理を中止します"
   exit 1
+else
+  echo "iniディレクトリ存在確認しました"
 fi
 
+#設定ファイル存在チェック
 if [ ! -e "$INIDIR"/video*.ini ]; then
   echo "error カメラ設定ファイルがありません。処理を中止します。"
   exit 1
+else
+   echo "カメラ設定ファイル確認しました"
+fi
+
+#カメラ台数設定ファイルチェック
+if [ ! -e "$INIDIR"/device.ini ]; then
+  echo "error カメラ台数ファイルがありません。処理を中止します。"
+  exit 1
+else
+  . ${INIDIR}/device.ini 
+  echo "device.ini確認しました(${video[@]})"
 fi
 
 #SCP用iniファイル存在チェック
@@ -81,6 +96,15 @@ done
 #撮影リカバリー(3 try)
 for vdo in ${video[@]}
 do
+
+  #iniファイルの存在チェック
+  #なければ./ini/video_default.iniを使用
+  if [ -e ${INIDIR}/${vdo}.ini ]; then
+   INIFILE=${INIDIR}/${vdo}.ini
+  else
+   INIFILE=${INIDIR}/video_default.ini
+  fi
+
   for ((i=0;i<3;i++))
   do
     if [ ! -e ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg ]; then
