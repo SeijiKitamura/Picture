@@ -2,8 +2,12 @@
 
 cd `dirname $0`
 
-###############################################
+
+##############################################
 #変数
+
+#接続カメラ
+video=("video0" "video1" "video2")
 
 #撮影間隔をセット(秒)
 SLEEPTIME=3
@@ -52,7 +56,7 @@ FUN=`date '+%M'`
 HIDUKE=${TOSI}${TUKI}${HI}${JI}${FUN}
 
 #撮影開始
-for vdo in `ls /dev | grep -E 'video[0-9]+$'`
+for vdo in ${video[@]}
 do
   #iniファイルの存在チェック
   #なければ./ini/video_default.iniを使用
@@ -74,29 +78,18 @@ do
   sleep ${SLEEPTIME}
 done
 
-#撮影リカバリー(1 try)
-for vdo in `ls /dev | grep -E 'video[0-9]+$'`
+#撮影リカバリー(3 try)
+for vdo in ${video[@]}
 do
-  if [ ! -e ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg ]; then
-    #iniファイルの存在チェック
-    #なければ./ini/video_default.iniを使用
-    if [ -e ${INIDIR}/${vdo}.ini ]; then
-     INIFILE=${INIDIR}/${vdo}.ini
-    else
-     INIFILE=${INIDIR}/video_default.ini
+  for ((i=0;i<3;i++))
+  do
+    if [ ! -e ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg ]; then
+      echo "${vdo}のリカバリー"
+      sleep ${SLEEPTIME}
+      echo "${vdo}の撮影開始"
+      /usr/bin/fswebcam -q -d /dev/${vdo} -c ${INIFILE} --title ${HOSTNAME}_${vdo} --save ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
     fi
-
-    echo "recovery ${vdo}の撮影開始"
-
-    /usr/bin/fswebcam -q -d /dev/${vdo} -c ${INIFILE} --title ${HOSTNAME}_${vdo} --save ${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
-
-    if [ $? -ne 0 ]; then
-      echo "error ${vdo}の撮影ができませんでした...."
-    fi
-
-    echo "sleeping ${SLEEPTIME}sec"
-    sleep ${SLEEPTIME}
-  fi
+  done
 done
 
 #ファイル送信
@@ -105,7 +98,8 @@ do
   #設定ファイル読み込み
   . ${SCPINI}
 
-  for vdo in `ls /dev | grep -E 'video[0-9]+$'`
+  #for vdo in `ls /dev | grep -E 'video[0-9]+$'`
+  for vdo in ${video[@]}
   do
     #送信ファイル
     SENDFILE=${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg

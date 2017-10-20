@@ -2,7 +2,7 @@
 
 cd
 
-sudo apt-get install -y fswebcam apache2
+sudo apt-get install -y fswebcam apache2 fonts-vlgothic fonts-ipafont fonts-ipaexfont
 
 #apache2
 if [ -e /etc/apache2/sites-enabled/picture.conf ]; then

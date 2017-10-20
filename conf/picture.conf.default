@@ -1,7 +1,7 @@
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
-	DocumentRoot /home/whoami/picture/public
-  <Directory /home/whoami/picture/public>
+	DocumentRoot /home/pi/picture/public
+  <Directory /home/pi/picture/public>
      Options Indexes FollowSymLinks
      AllowOverride all
      Require all granted

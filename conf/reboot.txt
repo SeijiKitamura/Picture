@@ -1,3 +1,2 @@
-0 0 * * * /sbin/shutdown -r now
 # m h  dom mon dow   command
 0 0 * * * /sbin/shutdown -r now
