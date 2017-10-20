@@ -3,6 +3,9 @@
 ###############################################
 #変数
 
+#接続カメラ
+video=("video0" "video1" "video2")
+
 #何日前からのデータをサーバーに送信するかセット
 BACKDAY=3
 
@@ -50,7 +53,8 @@ do
     TUKI=`date -d ${HIDUKE} +"%m"`
     HI=`date -d ${HIDUKE} +"%d"`
 
-    for vdo in `ls /dev| grep -E 'video[0-9]+$'`;do
+    for vdo in ${video[@]}
+    do
       #送信ファイル確定
       SENDFILE="DAY${HIDUKE}*_${vdo}.jpg"
 
