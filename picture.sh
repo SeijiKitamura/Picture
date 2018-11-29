@@ -98,39 +98,6 @@ do
   fi
 done
 
-#ファイル送信
-for SCPINI in `ls ${INIDIR}/scpserver*.ini`
-do
-  #設定ファイル読み込み
-  . ${SCPINI}
-
-  #for vdo in `ls /dev | grep -E 'video[0-9]+$'`
-  for vdo in ${video[@]}
-  do
-    #送信ファイル
-    SENDFILE=${SAVEDIR}/DAY${HIDUKE}_${vdo}.jpg
-
-    if [ -e ${SENDFILE} ]; then
-      #ファイルサーバー保存場所確定
-      SCPDIR=${SCPUSER}@${FILESERVER}:${DIR}/${TOSI}/${TUKI}/${HI}/${HOSTNAME}/${vdo}
-
-      #ファイル送信
-      scp -p ${SENDFILE} ${SCPDIR} 2>&1
-
-      if [ $? -eq 0 ]; then
-        echo "success scp ${SENDFILE} ${SCPDIR}"
-      else
-        echo "error scp ${SENDFILE} ${SCPDIR}"
-      fi
-    fi
-  done
-done
-
-#写真リスト更新
-find ${SAVEDIR} -maxdepth 1 -type f -name "DAY*.jpg" |
-xargs -I{} basename {} |
-awk -F"[\/|\.|_]" '{print substr($1,4,4),substr($1,8,2),substr($1,10,2),$2}' |
-sort |
-uniq > public/image_list.txt
-
+#ファイル送信(当日のみ)
+/bin/bash ./new_send.sh ${TOSI}${TUKI}${HI}
 exit 0
